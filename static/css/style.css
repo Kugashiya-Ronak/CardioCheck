@@ -1,18 +1,21 @@
 /* Force theme variables to update */
-body.dark-mode {
+/* FORCE PERMANENT DARK THEME VARIABLES */
+:root, body, body.dark-mode, body:not(.dark-mode) {
   --primary-light: #f1f5f9;
-  --bg-light: #0f172a;
-  --card-light: #1e293b;
-  --text-light: #f1f5f9;
-  --border-light: #475569;
+  --bg-light: #0f172a;       /* Deep blue background */
+  --card-light: #1e293b;     /* Card background */
+  --text-light: #f1f5f9;     /* White text */
+  --border-light: #475569;   /* Gray borders */
+  
+  /* Glassmorphism Defaults */
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
-body:not(.dark-mode) {
-  --primary-light: #0f172a;
-  --bg-light: #f8fafc;
-  --card-light: #ffffff;
-  --text-light: #0f172a;
-  --border-light: #e2e8f0;
+/* Force the body background globally */
+body {
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
 }
 
 /* Apply theme immediately */
@@ -882,7 +885,7 @@ body {
 
 .nav-links a {
   padding: var(--space-8) var(--space-16);
-  color: var(--color-text);
+  color: var(--text-main);
   text-decoration: none;
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-md);
@@ -903,7 +906,7 @@ body {
 }
 
 .nav-links a:hover {
-  background: var(--color-secondary);
+  background: var(--text-main);
 }
 
 .nav-links a:hover::after,
@@ -1456,21 +1459,21 @@ td {
   color: var(--color-text);
 }
 
-tr:hover {
+/* tr:hover {
   background: var(--color-background);
-}
+} */
 
 /* ============================================
    FOOTER
    ============================================ */
 
 .footer {
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-card-border);
+  background: #1e293b;
+  border-top: 1px solid #475569;
   padding: 40px 5%;
   margin-top: 80px;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--text-main);
 }
 
 .footer p {
