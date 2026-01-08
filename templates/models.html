@@ -3,26 +3,6 @@
 
 {% block content %}
 <style>
-    /* Force theme variables to update */
-body.dark-mode {
-  --primary-light: #f1f5f9;
-  --bg-light: #0f172a;
-  --card-light: #1e293b;
-  --text-light: #f1f5f9;
-  --border-light: #475569;
-}
-
-body:not(.dark-mode) {
-  --primary-light: #0f172a;
-  --bg-light: #f8fafc;
-  --card-light: #ffffff;
-  --text-light: #0f172a;
-  --border-light: #e2e8f0;
-}
-
-/* Apply theme immediately */
-body { transition: background-color 500ms, color 500ms; }
-
   /* --- Theme Variables (Matching Index) --- */
   :root {
     --primary-gradient: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
@@ -80,7 +60,7 @@ body { transition: background-color 500ms, color 500ms; }
   /* --- Unified Card Style (Matches Index .info-card & .stat-card) --- */
   /* Update the existing .modern-card to support flex layout */
     .modern-card {
-      background: var(--card-bg);
+      background: var(--card-bg) !important;
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 30px;
@@ -197,6 +177,8 @@ body { transition: background-color 500ms, color 500ms; }
   .clean-table {
     width: 100%;
     border-collapse: collapse;
+    background: var(--card-bg); /* Use your defined dark variable */
+    color: var(--text-main)
   }
 
   .clean-table th {
@@ -204,6 +186,7 @@ body { transition: background-color 500ms, color 500ms; }
     padding: 15px;
     color: var(--text-main);
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
     border-bottom: 2px solid var(--border-color);
   }
 
