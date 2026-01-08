@@ -5,6 +5,7 @@ from models.logistic_model import LogisticRegression
 from models.model_evaluation import ModelEvaluator, load_sample_data
 import json
 from datetime import datetime
+__main__.LogisticRegression = LogisticRegression
 
 app = Flask(__name__)
 app.secret_key = "cvd_secret_key_123"
