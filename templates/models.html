@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+{% block title %}Model Comparison - CVD Prediction{% endblock %}
+
+{% block content %}
+<style>
+    /* Force theme variables to update */
+body.dark-mode {
+  --primary-light: #f1f5f9;
+  --bg-light: #0f172a;
+  --card-light: #1e293b;
+  --text-light: #f1f5f9;
+  --border-light: #475569;
+}
+
+body:not(.dark-mode) {
+  --primary-light: #0f172a;
+  --bg-light: #f8fafc;
+  --card-light: #ffffff;
+  --text-light: #0f172a;
+  --border-light: #e2e8f0;
+}
+
+/* Apply theme immediately */
+body { transition: background-color 500ms, color 500ms; }
+
+  /* --- Theme Variables (Matching Index) --- */
+  :root {
+    --primary-gradient: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
+    --card-bg: #1e293b;
+    --border-color: #475569;
+    --text-main: #f1f5f9;
+    --text-muted: rgba(var(--color-gray-300-rgb), 0.7);
+    --cyan: #06b6d4;
+    --rose: #f43f5e;
+    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 10px 30px rgba(6, 182, 212, 0.15);
+  }
+
+  /* --- Hero Section --- */
+  .dashboard-hero {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 80px 5% 100px; /* Added bottom padding to overlap cards */
+    text-align: center;
+    position: relative;
+    margin-bottom: 0;
+  }
+
+  .dashboard-hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+
+  .dashboard-hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* --- Main Container --- */
+  .content-wrapper {
+    max-width: 1200px;
+    margin: -60px auto 60px; /* Negative margin to pull up into hero */
+    padding: 0 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* --- Grid Layouts --- */
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+  }
+
+  /* --- Unified Card Style (Matches Index .info-card & .stat-card) --- */
+  /* Update the existing .modern-card to support flex layout */
+    .modern-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      
+      /* ADD THESE THREE LINES */
+      display: flex;
+      flex-direction: column;
+      height: 100%; 
+    }
+    
+    /* Add this helper to ensure the canvas wrapper takes all remaining space */
+    .chart-wrapper {
+      flex-grow: 1;
+      min-height: 300px; /* Ensures it doesn't collapse on small screens */
+      position: relative;
+    }
+
+  .modern-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--cyan);
+  }
+
+  /* --- Model Specific Styles --- */
+  .model-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .model-icon {
+    width: 45px;
+    height: 45px;
+    background: var(--primary-gradient);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  .model-name {
+    font-size: 1.25em;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  /* --- Metrics Styling --- */
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .metric-label {
+    font-size: 0.95em;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .metric-value {
+    font-size: 1.1em;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* --- Chart Section --- */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+  }
+
+  .chart-title {
+    color: var(--text-main);
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 1.2em;
+    text-align: center;
+  }
+
+  /* --- Cross Validation Table Style --- */
+  .cv-section {
+    margin-top: 60px;
+  }
+  
+  .cv-header-text {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .cv-header-text h2 {
+    font-size: 2rem;
+    color: var(--text-main);
+    font-weight: 700;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .clean-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .clean-table th {
+    text-align: left;
+    padding: 15px;
+    color: var(--text-main);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .clean-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+
+  .fold-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: rgba(6, 182, 212, 0.1);
+    color: var(--cyan);
+    border-radius: 4px;
+    font-size: 0.85em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+
+  .mean-score {
+    font-weight: 700;
+    color: var(--rose);
+  }
+
+  /* Responsive fixes */
+  @media (max-width: 768px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+    .dashboard-hero h1 { font-size: 2.2rem; }
+  }
+</style>
+
+<section class="dashboard-hero">
+  <h1>Model Performance</h1>
+  <p>Comparing accuracy metrics across different ML algorithms on CVD prediction</p>
+</section>
+
+<div class="content-wrapper">
+
+  {% if model_data %}
+    <div class="models-grid">
+      {% for model_name, metrics in model_data.items() %}
+        <div class="modern-card">
+          <div class="model-header">
+            <!-- <div class="model-icon">AI</div> -->
+            <div class="model-name">{{ model_name }}</div>
+          </div>
+          
+          <div class="metrics-list">
+            <div class="metric-row">
+              <span class="metric-label">Accuracy</span>
+              <span class="metric-value">{{ metrics.accuracy }}%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Precision</span>
+              <span class="metric-value">{{ metrics.precision }}%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Recall</span>
+              <span class="metric-value">{{ metrics.recall }}%</span>
+            </div>
+             <!-- <div class="metric-row">
+              <span class="metric-label">F1-Score</span>
+              <span class="metric-value">{{ metrics.f1_score }}%</span>
+            </div> -->
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="charts-grid">
+      <div class="modern-card">
+        <h3 class="chart-title">Accuracy Comparison</h3>
+        <div class="chart-wrapper">
+          <canvas id="accuracyChart"></canvas>
+        </div>
+      </div>
+    
+      <div class="modern-card">
+        <h3 class="chart-title">Multi-Metric Radar Analysis</h3>
+        <div class="chart-wrapper">
+          <canvas id="metricsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const modelData = {{ model_data | tojson }};
+    
+    // Index Page Theme Colors
+    const themeCyan = '#06b6d4';
+    const themeRose = '#f43f5e';
+    const themeBlue = '#3b82f6';
+    const themeViolet = '#8b5cf6';
+    const gradientColors = [themeCyan, themeRose, themeBlue, themeViolet];
+
+    // --- 1. Accuracy Chart ---
+    const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+    
+    new Chart(accuracyCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(modelData),
+            datasets: [{
+                label: 'Accuracy (%)',
+                data: Object.values(modelData).map(m => m.accuracy),
+                backgroundColor: gradientColors,
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // This enables the stretch
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#f1f5f9', callback: value => value + '%' }
+                },
+                x: {
+                    ticks: { color: '#f1f5f9' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // --- 2. Radar Chart ---
+    const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+    const modelNames = Object.keys(modelData);
+    
+    const radarDatasets = modelNames.map((modelName, idx) => {
+        const color = gradientColors[idx % gradientColors.length];
+        const metrics = modelData[modelName];
+        return {
+            label: modelName,
+            data: [
+                metrics.accuracy,
+                metrics.precision,
+                metrics.recall,
+                metrics.f1_score,
+                metrics.roc_auc === 'N/A' ? 0 : metrics.roc_auc
+            ],
+            borderColor: color,
+            backgroundColor: color + '20', 
+            pointBackgroundColor: color,
+            borderWidth: 2,
+        };
+    });
+
+    new Chart(metricsCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'ROC-AUC'],
+            datasets: radarDatasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // This enables the stretch
+            plugins: {
+                legend: { 
+                    position: 'bottom',
+                    labels: { color: '#f1f5f9' } 
+                }
+            },
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(255,255,255,0.1)' },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    pointLabels: {
+                        color: '#f1f5f9',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    ticks: { 
+                        display: false, // Hide messy numbers in radar background
+                        backdropColor: 'transparent'
+                    },
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+
+  {% else %}
+    <div class="modern-card" style="text-align: center; padding: 50px;">
+      <p style="font-size: 1.2em; color: var(--text-muted);">⚠️ Model comparison data not available.</p>
+    </div>
+  {% endif %}
+
+  <div class="cv-section">
+    <div class="cv-header-text">
+      <h2>Cross-Validation Results</h2>
+      <p style="color: var(--text-muted);">Statistical validation using K-Fold analysis</p>
+    </div>
+
+    {% if cv_data %}
+      {% for model_name, results in cv_data.items() %}
+        <div class="modern-card" style="margin-bottom: 30px;">
+          <div class="model-header" style="border:none; padding-bottom:0;">
+            <!-- <div class="model-icon" style="width:35px; height:35px; font-size: 1em;">></div> -->
+            <div class="model-name">{{ model_name }} <span style="font-weight:400; font-size:0.8em; color:var(--text-muted);">({{ results.folds }}-Fold)</span></div>
+          </div>
+
+          <div class="table-container">
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Fold Scores</th>
+                  <th>Mean</th>
+                  <th>Std Dev</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for metric in ['accuracy','precision','recall'] %}
+                  <tr>
+                    <td><strong>{{ metric | replace('_', ' ') | title }}</strong></td>
+                    <td>
+                      {% for score in results[metric].scores %}
+                        <span class="fold-badge">{{ score }}%</span>
+                      {% endfor %}
+                    </td>
+                    <td class="mean-score">{{ results[metric].mean }}%</td>
+                    <td style="color: var(--text-muted);">± {{ results[metric].std }}%</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

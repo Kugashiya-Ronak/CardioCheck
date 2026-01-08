@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - CardioCheck{% endblock %}
+
+{% block content %}
+<style>
+  .dashboard-hero {
+    background: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
+    color: white;
+    padding: 120px 5%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dashboard-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+
+  .dashboard-hero p {
+    font-size: 1.3rem;
+    opacity: 0.9;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 14px 40px;
+    background: var(--card-light);
+    color: #06b6d4;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    border: 1px solid var(--border-light);
+  }
+
+  .cta-button:hover {
+    box-shadow: 0 8px 30px rgba(6, 182, 212, 0.15);
+    border-color: #06b6d4;
+  }
+
+  .stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    max-width: 1000px;
+    margin: -60px auto 60px;
+    padding: 0 5%;
+    position: relative;
+    z-index: 10;
+  }
+
+  .stat-card {
+    background: var(--card-light);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    transition: all 300ms;
+    animation: slideInUp 600ms ease-out forwards;
+    opacity: 0;
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 100ms; }
+  .stat-card:nth-child(2) { animation-delay: 200ms; }
+  .stat-card:nth-child(3) { animation-delay: 300ms; }
+  .stat-card:nth-child(4) { animation-delay: 400ms; }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(6, 182, 212, 0.15);
+    border-color: #06b6d4;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .info-section {
+    max-width: 1000px;
+    margin: 80px auto;
+    padding: 0 5%;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    margin-bottom: 60px;
+  }
+
+  .info-card {
+    background: var(--card-light);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 32px;
+    transition: all 300ms;
+  }
+
+  .info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-color: #06b6d4;
+  }
+
+  .info-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .info-card p {
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin: 0;
+  }
+
+  .key-facts {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(244, 63, 94, 0.05) 100%);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 40px;
+    margin-top: 40px;
+  }
+
+  .key-facts h3 {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .facts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+  }
+
+  .fact-item {
+    display: flex;
+    gap: 16px;
+  }
+
+  .fact-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  .fact-content h4 {
+    margin: 0 0 4px 0;
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .fact-content p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="dashboard-hero">
+  <h1>Cardiovascular Health Assessment</h1>
+  <p>Advanced machine learning analysis to predict your cardiovascular risk and guide preventive care</p>
+  <a href="/predict" class="cta-button">Start Assessment</a>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+  <div class="stat-card">
+    <div class="stat-number">70K+</div>
+    <div class="stat-label">Clinical Records</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">94%</div>
+    <div class="stat-label">Accuracy</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">11</div>
+    <div class="stat-label">Risk Factors</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">Real-time</div>
+    <div class="stat-label">Analysis</div>
+  </div>
+</section>
+
+<!-- Information Section -->
+<section class="info-section">
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>🔍 Early Detection</h3>
+      <p>Identify cardiovascular risk factors before symptoms develop. Early intervention can significantly reduce health complications.</p>
+    </div>
+    <div class="info-card">
+      <h3>📊 Data-Driven</h3>
+      <p>Our system uses advanced machine learning trained on thousands of clinical cases to provide accurate risk assessment.</p>
+    </div>
+    <div class="info-card">
+      <h3>🏥 Medical Grade</h3>
+      <p>Based on evidence-based medicine and validated clinical parameters used by healthcare professionals worldwide.</p>
+    </div>
+  </div>
+
+  <!-- Key Facts -->
+  <div class="key-facts">
+    <h3>Understanding Cardiovascular Disease</h3>
+    <div class="facts-list">
+      <div class="fact-item">
+        <div class="fact-icon">1</div>
+        <div class="fact-content">
+          <h4>Global Impact</h4>
+          <p>CVD causes approximately 17.9 million deaths globally every year, making it a leading cause of mortality.</p>
+        </div>
+      </div>
+      <div class="fact-item">
+        <div class="fact-icon">2</div>
+        <div class="fact-content">
+          <h4>Preventable Risk</h4>
+          <p>Over 80% of premature heart disease and stroke can be prevented through lifestyle modifications and early detection.</p>
+        </div>
+      </div>
+      <div class="fact-item">
+        <div class="fact-icon">3</div>
+        <div class="fact-content">
+          <h4>Multiple Factors</h4>
+          <p>Cardiovascular risk depends on multiple factors: age, blood pressure, cholesterol, lifestyle, and genetic predisposition.</p>
+        </div>
+      </div>
+      <div class="fact-item">
+        <div class="fact-icon">4</div>
+        <div class="fact-content">
+          <h4>Early Warning</h4>
+          <p>Risk assessment and monitoring can provide early warning signs, allowing for timely medical intervention.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

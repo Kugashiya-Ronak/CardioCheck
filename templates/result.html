@@ -1,0 +1,590 @@
+{% extends "base.html" %}
+{% block title %}Assessment Result - CardioCheck{% endblock %}
+
+{% block content %}
+<style>
+  .result-header {
+    background: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
+    color: white;
+    padding: 60px 5%;
+    text-align: center;
+  }
+
+  .result-header h1 {
+    font-size: 2.5rem;
+    margin: 0 0 12px 0;
+    font-weight: 700;
+  }
+
+  .result-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  .result-container {
+    max-width: 1200px;
+    margin: -40px auto 60px;
+    padding: 0 5%;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Update the layout to ensure both columns are the same height */
+.result-layout {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 28px;
+  margin-bottom: 40px;
+  align-items: stretch; /* Forces children columns to be equal height */
+}
+
+/* Update the card to fill the height and distribute content */
+.result-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 40px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  animation: slideInUp 600ms ease-out;
+
+  /* ADD THESE LINES */
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+}
+
+/* Ensure the content inside the Summary card expands to push the footer down */
+.summary-content {
+  flex-grow: 1;
+}
+
+/* Optional: Ensure the Risk Circle doesn't stretch weirdly */
+.risk-circle-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .result-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  /* Risk Circle */
+  .risk-circle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .risk-circle {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    background: conic-gradient({{ risk_color }} {{ proba }}%, var(--border-light) 0);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 8px var(--card-light), 0 8px 30px rgba(0, 0, 0, 0.15);
+    animation: circleScale 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes circleScale {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .risk-circle::before {
+    content: '';
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    background: var(--card-light);
+    border-radius: 50%;
+    z-index: 1;
+  }
+
+  .risk-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .risk-percentage {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: {{ risk_color }};
+    line-height: 1;
+    margin: 0;
+  }
+
+  .risk-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .risk-badge {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, {{ risk_color }} 0%, rgba({{ risk_color }}, 0.5) 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 24px;
+    box-shadow: 0 4px 15px rgba({{ risk_color }}, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Advice Section */
+  .advice-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(20px);
+    margin-bottom: 40px;
+    animation: slideInUp 700ms ease-out 100ms backwards;
+  }
+
+  .advice-section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .advice-section p {
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin: 0 0 16px 0;
+  }
+
+  .advice-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .advice-section li {
+    padding: 12px 0 12px 32px;
+    position: relative;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .advice-section li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  /* Details Grid */
+  .details-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(20px);
+    margin-bottom: 40px;
+    animation: slideInUp 800ms ease-out 200ms backwards;
+  }
+
+  .details-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 24px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+  }
+
+  .detail-item {
+    background: var(--bg-lighter);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    text-align: center;
+    transition: all 200ms;
+  }
+
+  .detail-item:hover {
+    transform: translateY(-2px);
+    border-color: #06b6d4;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+  }
+
+  .detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .detail-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #06b6d4;
+  }
+
+  .detail-unit {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* History Section */
+  .history-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(20px);
+    animation: slideInUp 900ms ease-out 300ms backwards;
+  }
+
+  .history-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 24px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .history-item {
+    background: var(--bg-lighter);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 200ms;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history-item:hover {
+    background: rgba(6, 182, 212, 0.05);
+    border-color: #06b6d4;
+  }
+
+  .history-name {
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+
+  .history-risk {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .history-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-action {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 200ms;
+    font-size: 0.95rem;
+  }
+
+  .btn-new {
+    background: linear-gradient(135deg, #06b6d4 0%, #f43f5e 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+  }
+
+  .btn-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(6, 182, 212, 0.4);
+  }
+
+  .btn-home {
+    background: var(--bg-lighter);
+    color: var(--text-light);
+    border: 1.5px solid var(--border-light);
+  }
+
+  .btn-home:hover {
+    border-color: #06b6d4;
+    background: rgba(6, 182, 212, 0.05);
+  }
+
+  @media (max-width: 900px) {
+    .result-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .risk-circle {
+      width: 220px;
+      height: 220px;
+    }
+
+    .risk-circle::before {
+      width: 180px;
+      height: 180px;
+    }
+
+    .risk-percentage {
+      font-size: 2.5rem;
+    }
+
+    .details-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .result-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .details-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .btn-action {
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- Result Header -->
+<section class="result-header">
+  <h1>Assessment Complete</h1>
+  <p>Your personalized cardiovascular risk analysis</p>
+</section>
+
+<!-- Results -->
+<div class="result-container">
+  <div class="result-layout">
+    <!-- Risk Display Card -->
+    <div class="result-card">
+      <h2>Your Risk Assessment</h2>
+      <div class="risk-circle-container">
+        <div class="risk-circle">
+          <div class="risk-content">
+            <p class="risk-percentage">{{ proba }}%</p>
+            <p class="risk-label">Risk Score</p>
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center;">
+        <span class="risk-badge">{{ risk_level }}</span>
+      </div>
+    </div>
+
+    <!-- Quick Summary Card -->
+    <div class="result-card">
+      <h2>Summary</h2>
+      <div class="summary-content"> <div style="font-size: 0.95rem; line-height: 1.8; color: var(--text-muted);">
+          {% if proba >= 70 %}
+            <p><strong>Status:</strong> High Risk</p>
+            <p>Your assessment indicates elevated cardiovascular risk. Professional medical consultation is recommended.</p>
+          {% elif proba >= 30 %}
+            <p><strong>Status:</strong> Moderate Risk</p>
+            <p>Your assessment indicates moderate cardiovascular risk. Lifestyle improvements are advised.</p>
+          {% else %}
+            <p><strong>Status:</strong> Low Risk</p>
+            <p>Your assessment indicates low cardiovascular risk. Maintain current healthy habits.</p>
+          {% endif %}
+        </div>
+      </div>
+    
+      <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-muted);">
+        <p><strong>Assessment Date:</strong> {{ now.strftime('%B %d, %Y') }}</p>
+        <p><strong>Patient:</strong> {{ name }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="advice-section">
+    <h3>Recommended Actions</h3>
+    {% if proba >= 70 %}
+      <p><strong>🚨 Urgent Action Required</strong></p>
+      <ul>
+        <li>Schedule an appointment with a cardiologist immediately</li>
+        <li>Get comprehensive cardiac screening including ECG and stress testing</li>
+        <li>Monitor blood pressure daily and maintain a log</li>
+        <li>Start or increase physical activity (consult doctor first)</li>
+        <li>Follow a heart-healthy diet low in sodium and saturated fats</li>
+        <li>Consider medications as prescribed by your physician</li>
+      </ul>
+    {% elif proba >= 30 %}
+      <p><strong>⚠️ Preventive Measures Recommended</strong></p>
+      <ul>
+        <li>Schedule a check-up with your primary care physician</li>
+        <li>Increase physical activity to at least 150 minutes per week</li>
+        <li>Adopt a Mediterranean or DASH diet</li>
+        <li>Maintain healthy weight (BMI 18.5-24.9)</li>
+        <li>Reduce alcohol consumption if applicable</li>
+        <li>Eliminate smoking and avoid secondhand smoke</li>
+        <li>Manage stress through meditation, yoga, or counseling</li>
+      </ul>
+    {% else %}
+      <p><strong>✅ Continue Healthy Habits</strong></p>
+      <ul>
+        <li>Maintain current lifestyle and exercise routine</li>
+        <li>Keep regular check-ups with your doctor</li>
+        <li>Monitor your health metrics annually</li>
+        <li>Stay physically active with regular cardiovascular exercise</li>
+        <li>Continue eating a balanced, nutritious diet</li>
+        <li>Avoid smoking and limit alcohol consumption</li>
+        <li>Manage stress and maintain mental wellness</li>
+      </ul>
+    {% endif %}
+  </div>
+
+  <!-- Detailed Measurements -->
+  <div class="details-section">
+    <h3>Your Health Metrics</h3>
+    <div class="details-grid">
+      <div class="detail-item">
+        <span class="detail-label">Age</span>
+        <div class="detail-value">{{ inputs.age }}</div>
+        <span class="detail-unit">years</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Height</span>
+        <div class="detail-value">{{ inputs.height }}</div>
+        <span class="detail-unit">cm</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Weight</span>
+        <div class="detail-value">{{ inputs.weight }}</div>
+        <span class="detail-unit">kg</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">BMI</span>
+        <div class="detail-value">{{ bmi }}</div>
+        <span class="detail-unit">kg/m²</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Systolic BP</span>
+        <div class="detail-value">{{ inputs.bp_hi }}</div>
+        <span class="detail-unit">mmHg</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Diastolic BP</span>
+        <div class="detail-value">{{ inputs.bp_lo }}</div>
+        <span class="detail-unit">mmHg</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Cholesterol</span>
+        <div class="detail-value">{{ inputs.cholesterol }}</div>
+        <span class="detail-unit">Level</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Glucose</span>
+        <div class="detail-value">{{ inputs.gluc }}</div>
+        <span class="detail-unit">Level</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Smoker</span>
+        <div class="detail-value" style="font-size: 1rem;">{{ 'Yes' if inputs.smoke == '1' else 'No' }}</div>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Alcohol</span>
+        <div class="detail-value" style="font-size: 1rem;">{{ 'Yes' if inputs.alco == '1' else 'No' }}</div>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Active</span>
+        <div class="detail-value" style="font-size: 1rem;">{{ 'Yes' if inputs.active == '1' else 'No' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent History -->
+  {% if history %}
+  <div class="history-section">
+    <h3>Assessment History</h3>
+    <div class="history-list">
+      {% for item in history[:5] %}
+      <div class="history-item">
+        <div>
+          <div class="history-name">{{ item.name }}</div>
+          <div class="history-risk">Risk: {{ item.proba }}% · {{ item.level }}</div>
+        </div>
+        <span class="history-badge" style="background: {% if item.proba >= 70 %}rgba(239, 68, 68, 0.2); color: #ef4444;{% elif item.proba >= 30 %}rgba(245, 158, 11, 0.2); color: #f59e0b;{% else %}rgba(16, 185, 129, 0.2); color: #10b981;{% endif %}">
+          {{ item.level }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <a href="/predict" class="btn-action btn-new">New Assessment</a>
+    <a href="/" class="btn-action btn-home">Back to Home</a>
+  </div>
+</div>
+
+{% endblock %}
