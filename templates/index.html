@@ -152,12 +152,13 @@
   }
 
   .key-facts {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(244, 63, 94, 0.05) 100%);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 40px;
-    margin-top: 40px;
-  }
+      background: var(--card-light); /* Use the dark card color */
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 40px;
+      color: var(--text-light);
+      margin-top: 40px;
+    }
 
   .key-facts h3 {
     font-size: 1.5rem;
@@ -170,11 +171,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 24px;
-  }
-
-  .fact-item {
-    display: flex;
-    gap: 16px;
   }
 
   .fact-icon {
