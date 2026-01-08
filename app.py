@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, session, jsonify
 import numpy as np
+import __main__
 import joblib
 from models.logistic_model import LogisticRegression
 from models.model_evaluation import ModelEvaluator, load_sample_data
